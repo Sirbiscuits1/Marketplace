@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4chain Ordinals Marketplace</title>
+    <meta name="description" content="Buy, sell, and trade BSV 1Sat Ordinals on 4chain Marketplace">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div>
+                <h1 class="logo">4chain Ordinals</h1>
+                <p class="tagline">1Sat Marketplace</p>
+            </div>
+            <div class="wallet-section">
+                <div class="wallet-info" id="walletInfo">
+                    <div class="wallet-address" id="walletAddress" title="Click to copy">--</div>
+                    <div class="wallet-balance" id="walletBalance">-- BSV</div>
+                </div>
+                <button class="btn btn-wallet" id="connectWalletBtn" onclick="connectWallet()">
+                    Connect Wallet
+                </button>
+            </div>
+        </header>
+
+        <!-- Health Bar -->
+        <div class="health-bar">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div class="health-dot" id="healthDot"></div>
+                <span id="healthStatus">Connecting...</span>
+            </div>
+            <span style="color:var(--text-dim);">|</span>
+            <span id="listingsCount">Listings: --</span>
+            <span style="color:var(--text-dim);">|</span>
+            <span id="walletStatusText">Wallet: Not Connected</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('explore')">🔍 Explore</button>
+            <button class="tab" onclick="switchTab('my-ordinals')">◆ My Ordinals</button>
+            <button class="tab" onclick="switchTab('marketplace')">🏪 Marketplace</button>
+        </div>
+
+        <!-- Explore Tab -->
+        <div class="tab-content active" id="explore-tab">
+            <div class="search-section">
+                <div class="search-label">Search Wallet Address</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="addressInput" 
+                           placeholder="Enter BSV wallet address..."
+                           value="1skbG9UYUm9x9dMkUVtomSL9LLRgFi4f3">
+                    <button class="btn btn-primary" id="searchBtn" onclick="searchWallet()">Search</button>
+                </div>
+            </div>
+            
+            <div class="stats-bar" id="statsBar" style="display:none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalOrdinals">0</div>
+                    <div class="stat-label">Ordinals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="imageCount">0</div>
+                    <div class="stat-label">Images</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="fetchTime">0ms</div>
+                    <div class="stat-label">Fetch Time</div>
+                </div>
+            </div>
+            
+            <div id="exploreResults">
+                <div class="empty-state">
+                    <div class="empty-icon">⬡</div>
+                    <h3 class="empty-title">Enter a Wallet Address</h3>
+                    <p>Search any BSV wallet to discover ordinals</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Ordinals Tab -->
+        <div class="tab-content" id="my-ordinals-tab">
+            <div id="myOrdinalsContent">
+                <div class="empty-state">
+                    <div class="empty-icon">🔗</div>
+                    <h3 class="empty-title">Connect Your Wallet</h3>
+                    <p>Connect Yours Wallet to view your ordinals</p>
+                    <button class="btn btn-wallet" style="margin-top:15px;" onclick="connectWallet()">
+                        Connect Wallet
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketplace Tab -->
+        <div class="tab-content" id="marketplace-tab">
+            <div class="search-section">
+                <div class="search-label">Active Listings</div>
+                <p style="color:var(--text-secondary);font-size:0.85rem;">
+                    Browse ordinals for sale. Connect wallet to buy.
+                </p>
+            </div>
+            <div id="marketplaceListings">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading listings...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Ordinal Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Single bundled script -->
+    <script src="js/app.bundle.js"></script>
+</body>
+</html>
