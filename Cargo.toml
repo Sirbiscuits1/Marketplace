@@ -1,0 +1,41 @@
+[package]
+name = "bsv-ordinals-marketplace"
+version = "0.1.0"
+edition = "2021"
+description = "BSV 1Sat Ordinals Marketplace Backend"
+
+[dependencies]
+# Web framework
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async caching with TTL
+moka = { version = "0.12", features = ["future"] }
+
+# Rate limiting
+governor = "0.6"
+
+# Database
+sled = "0.34"
+
+# UUID for listing IDs
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# DateTime
+chrono = { version = "0.4", features = ["serde"] }
