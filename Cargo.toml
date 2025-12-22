@@ -39,3 +39,7 @@ thiserror = "1.0"
 
 # DateTime
 chrono = { version = "0.4", features = ["serde"] }
+
+#BSV 
+bitcoin = { version = "0.31", features = ["serde"] }
+hex = "0.4"

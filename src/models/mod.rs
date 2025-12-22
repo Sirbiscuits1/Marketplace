@@ -228,6 +228,39 @@ pub struct OrdinalUtxoRef {
     pub script: String,  // Base64 encoded
 }
 
+/// Simple representation of a buyer’s payment UTXO (used when building purchase TX)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BuyerUtxo {
+    pub txid: String,
+    pub vout: u32,
+    pub satoshis: u64,
+    pub script_hex: String,  // Hex-encoded locking script (P2PKH usually)
+}
+
+/// Request from frontend to prepare a Yours Wallet purchase
+#[derive(Debug, Deserialize)]
+pub struct PreparePurchaseRequest {
+    pub buyer_ord_address: String,
+    pub buyer_payment_address: String,
+}
+
+/// Signature request format expected by Yours Wallet (yours.getSignatures)
+#[derive(Debug, Clone, Serialize)]
+pub struct SigRequest {
+    pub input_index: u32,
+    pub prev_txid: String,
+    pub prev_vout: u32,
+    pub satoshis: u64,
+    pub script_hex: String,
+}
+
+/// Response with unsigned TX and signature requests for Yours Wallet
+#[derive(Debug, Serialize)]
+pub struct PreparePurchaseResponse {
+    pub raw_tx_hex: String,
+    pub sig_requests: Vec<SigRequest>,
+}
+
 /// Request to create a new listing
 #[derive(Debug, Deserialize)]
 pub struct CreateListingRequest {

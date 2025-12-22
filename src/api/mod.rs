@@ -1,4 +1,4 @@
-mod handlers;
+pub mod handlers;
 
 pub use handlers::{
     AppState, root, health, 
@@ -6,6 +6,9 @@ pub use handlers::{
     search_ordinals,
     get_listings, get_listing, create_listing, cancel_listing, purchase_listing,
     get_listing_by_origin, calculate_fees,
+    prepare_purchase,     // ← NEW
+    broadcast_purchase,
+    purchase_handcash,   // ← NEW
 };
 
 use axum::{routing::{get, post}, Router};
@@ -38,7 +41,9 @@ pub fn create_router(state: AppState) -> Router {
         .route("/listings/:id", get(get_listing))
         .route("/listings/:id/cancel", post(cancel_listing))
         .route("/listings/:id/purchase", post(purchase_listing))
-        
+        .route("/listings/:id/prepare-purchase", post(prepare_purchase))     // ← NEW
+        .route("/listings/:id/broadcast-purchase", post(broadcast_purchase)) // ← NEW
+        .route("/listings/:id/purchase-handcash", post(purchase_handcash))
         // Fee calculation
         .route("/fees/calculate", get(calculate_fees))
         

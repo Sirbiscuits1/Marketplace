@@ -4,7 +4,8 @@ mod config;
 mod models;
 mod services;
 
-use api::{create_router, AppState};
+use api::create_router;
+use api::handlers::AppState;  // ← Import the correct AppState from handlers.rs
 use cache::CacheManager;
 use config::Config;
 use services::{GorillaPoolClient, OrdinalService, ListingsDb};
@@ -51,12 +52,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let active_listings = listings_db.count_active_listings();
     info!("Listings database loaded: {} active listings", active_listings);
 
-    // Create application state
+    // Create application state — using the AppState from handlers.rs
     let state = AppState {
         ordinal_service,
         cache,
         listings_db,
         start_time: Instant::now(),
+        config: config.clone(),
     };
 
     // Build router
@@ -76,6 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("   GET  /listings                → Get active listings");
     info!("   POST /listings                → Create listing");
     info!("   POST /listings/:id/cancel     → Cancel listing");
+    info!("   POST /listings/:id/prepare-purchase → Prepare unsigned TX for Yours Wallet purchase");
     info!("   POST /listings/:id/purchase   → Purchase listing");
     info!("   GET  /fees/calculate          → Calculate fees");
     info!("");

@@ -32,6 +32,14 @@ pub struct Config {
     
     /// Database path
     pub db_path: String,
+
+    /// BSV address that receives the 1% marketplace fee and optional tips
+    pub marketplace_fee_address: String,
+
+    /// HandCash App ID (public)
+    pub handcash_app_id: String,
+    /// HandCash App Secret (server-only - keep secret!)
+    pub handcash_app_secret: String,
 }
 
 impl Default for Config {
@@ -56,6 +64,15 @@ impl Default for Config {
             max_concurrent_requests: 5,
             
             db_path: "marketplace_db".to_string(),
+
+            // Real marketplace fee address
+            marketplace_fee_address: "15BvxtG9U61ndVZccSmuG9nQzygzjDqC41".to_string(),
+
+            // Real HandCash App ID (public - safe to hardcode)
+            handcash_app_id: "68082b6ba117aae3817ec15f".to_string(),
+
+            // Placeholder for secret - MUST be overridden in production via env var
+            handcash_app_secret: "PLACEHOLDER_SECRET_DO_NOT_USE_IN_PRODUCTION".to_string(),
         }
     }
 }
@@ -80,7 +97,31 @@ impl Config {
                 config.api_rate_limit_per_second = r;
             }
         }
-        
+
+        // Load marketplace fee address - REQUIRED in production
+        if let Ok(addr) = std::env::var("MARKETPLACE_FEE_ADDRESS") {
+            config.marketplace_fee_address = addr;
+        } else if cfg!(debug_assertions) {
+            tracing::warn!("MARKETPLACE_FEE_ADDRESS not set - using default");
+        } else {
+            panic!("MARKETPLACE_FEE_ADDRESS environment variable is required");
+        }
+
+        // HandCash App ID - public, can fall back to default
+        config.handcash_app_id = std::env::var("HANDCASH_APP_ID")
+            .unwrap_or_else(|_| config.handcash_app_id.clone());
+
+        // HandCash App Secret - REQUIRED in production
+        config.handcash_app_secret = std::env::var("HANDCASH_APP_SECRET")
+            .unwrap_or_else(|_| {
+                if cfg!(debug_assertions) {
+                    tracing::warn!("HANDCASH_APP_SECRET not set - HandCash features will fail");
+                    config.handcash_app_secret.clone()
+                } else {
+                    panic!("HANDCASH_APP_SECRET is required for HandCash integration");
+                }
+            });
+
         config
     }
 }
