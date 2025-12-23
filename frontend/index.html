@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4chain Ordinals Marketplace</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg-primary:#0a0a0f;
+            --bg-secondary:#12121a;
+            --bg-card:#1a1a24;
+            --accent-neon-yellow:#eaff00;
+            --accent-neon-green:#39ff14;
+            --accent-cyan:#00d4ff;
+            --accent-red:#ff4466;
+            --text-primary:#fff;
+            --text-secondary:#8888a0;
+            --text-dim:#555566;
+            --border-color:#2a2a3a;
+            --gradient-main:linear-gradient(135deg,#eaff00 0%,#39ff14 100%);
+            --gradient-border:linear-gradient(135deg,#eaff00,#39ff14);
+            --handcash-green:#38CB7C
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.5}
+        .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(233,255,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(233,255,0,.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+        .container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:30px 20px}
+        header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;flex-wrap:wrap;gap:20px}
+        .logo{font-size:2rem;font-weight:800;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .tagline{color:var(--text-secondary);font-size:.75rem;font-weight:500;letter-spacing:2px;text-transform:uppercase}
+        .wallet-section{display:flex;align-items:center;gap:15px}
+        .wallet-info{text-align:right;display:none}
+        .wallet-info.connected{display:block}
+        .wallet-address{font-size:.8rem;font-weight:500;color:var(--accent-cyan);cursor:pointer;font-family:monospace}
+        .wallet-balance{font-size:.7rem;color:var(--text-secondary)}
+        .wallet-type{font-size:.6rem;color:var(--accent-neon-green);text-transform:uppercase;letter-spacing:1px}
+        .btn{font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;padding:12px 24px;border:none;border-radius:10px;cursor:pointer;transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;position:relative}
+        .btn-primary{background:var(--gradient-main);color:#000;box-shadow:0 0 20px rgba(233,255,0,.4)}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 0 30px rgba(233,255,0,.6)}
+        .btn-secondary{background:transparent;border:2px solid var(--border-color);color:var(--text-secondary)}
+        .btn-secondary:hover{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+        /* Neon gradient buttons: transparent fill, gradient text + border */
+        .btn-neon{
+            background:transparent;
+            border:2px solid transparent;
+            color:transparent;
+            background-clip:padding-box;
+            -webkit-background-clip:text;
+            background-image:var(--gradient-main);
+            -webkit-text-fill-color:transparent;
+            position:relative;
+            overflow:hidden;
+        }
+        .btn-neon::before{
+            content:'';
+            position:absolute;
+            inset:0;
+            padding:2px;
+            background:var(--gradient-border);
+            border-radius:10px;
+            -webkit-mask:linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+        .btn-neon:hover{
+            transform:translateY(-3px);
+            box-shadow:0 0 25px rgba(233,255,0,.5);
+        }
+        .btn-wallet{background:var(--gradient-main);color:#000}
+        .btn-yours{background:var(--gradient-main);color:#000}
+        .btn-handcash{background:var(--handcash-green);color:#fff}
+        .btn-small{padding:8px 16px;font-size:.75rem}
+        .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+        .tabs{display:flex;gap:8px;margin-bottom:25px;border-bottom:1px solid var(--border-color);padding-bottom:15px;flex-wrap:wrap}
+        .tab{background:transparent;border:2px solid var(--border-color);color:var(--text-secondary);padding:10px 20px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;transition:all .2s ease}
+        .tab.active{background:var(--accent-neon-green);border-color:var(--accent-neon-green);color:#000}
+        .tab:hover:not(.active){border-color:var(--accent-neon-yellow);color:var(--accent-neon-yellow)}
+        .tab-content{display:none}
+        .tab-content.active{display:block;animation:fadeIn .3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .search-section{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:25px;margin-bottom:25px}
+        .search-label{font-size:1rem;font-weight:600;margin-bottom:12px}
+        .search-label::before{content:'◆ ';color:var(--accent-neon-green)}
+        .search-box{display:flex;gap:12px}
+        .search-input{flex:1;background:var(--bg-primary);border:2px solid var(--border-color);border-radius:10px;padding:14px 18px;font-family:monospace;font-size:.9rem;color:var(--text-primary)}
+        .search-input:focus{outline:none;border-color:var(--accent-neon-green)}
+        .search-input::placeholder{color:var(--text-dim)}
+        .stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:25px}
+        .stat-card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:16px;text-align:center}
+        .stat-value{font-size:1.5rem;font-weight:800;color:var(--accent-neon-green)}
+        .stat-label{color:var(--text-secondary);font-size:.65rem;font-weight:500;text-transform:uppercase;letter-spacing:1px}
+        .ordinals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+        .ordinal-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;transition:all .2s ease;cursor:pointer}
+        .ordinal-card:hover{border-color:var(--accent-neon-green);transform:translateY(-4px);box-shadow:0 10px 30px rgba(57,255,20,.3)}
+        .ordinal-card.listed{border-color:var(--accent-neon-green)}
+        .ordinal-preview{width:100%;aspect-ratio:1;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+        .ordinal-preview img{width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .3s ease}
+        .ordinal-preview img.loaded{opacity:1}
+        .ordinal-preview .placeholder{font-size:2.5rem;color:var(--text-dim)}
+        .badge{position:absolute;padding:4px 8px;border-radius:12px;font-size:.6rem;font-weight:700;text-transform:uppercase}
+        .badge-type{top:8px;right:8px;background:rgba(0,0,0,.7);color:var(--accent-cyan)}
+        .badge-listed{top:8px;left:8px;background:var(--accent-neon-green);color:#000}
+        .ordinal-info{padding:12px}
+        .ordinal-name{font-size:.85rem;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ordinal-origin{font-size:.65rem;color:var(--text-dim);font-family:monospace}
+        .ordinal-price{margin-top:10px;padding-top:10px;border-top:1px solid var(--border-color)}
+        .price-value{font-weight:700;color:var(--accent-neon-green)}
+        .price-label{font-size:.6rem;color:var(--text-secondary)}
+        .loading,.empty-state{display:flex;flex-direction:column;align-items:center;padding:50px 20px;color:var(--text-secondary)}
+        .spinner{width:35px;height:35px;border:3px solid var(--border-color);border-top-color:var(--accent-neon-green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+        .empty-title{font-size:1.1rem;font-weight:600;margin-bottom:6px;color:var(--text-primary)}
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all .3s ease}
+        .modal-overlay.active{opacity:1;visibility:visible}
+        .modal{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;max-width:600px;width:95%;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .3s ease}
+        .modal-overlay.active .modal{transform:scale(1)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px;border-bottom:1px solid var(--border-color)}
+        .modal-title{font-size:1.1rem;font-weight:700}
+        .modal-close{background:none;border:none;color:var(--text-secondary);font-size:1.3rem;cursor:pointer}
+        .modal-close:hover{color:var(--accent-neon-green)}
+        .modal-content{padding:18px}
+        .modal-preview{width:100%;max-height:300px;background:var(--bg-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;overflow:hidden}
+        .modal-preview img{max-width:100%;max-height:300px;object-fit:contain}
+        .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+        .detail-item{background:var(--bg-card);border-radius:8px;padding:12px}
+        .detail-label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+        .detail-value{font-size:.8rem;word-break:break-all}
+        .detail-value.highlight{color:var(--accent-neon-green)}
+        .detail-item.full-width{grid-column:1/-1}
+        .listing-form{background:var(--bg-card);border-radius:10px;padding:16px;margin-top:16px}
+        .form-title{font-size:.95rem;font-weight:600;margin-bottom:12px;color:var(--accent-neon-green)}
+        .form-group{margin-bottom:12px}
+        .form-label{display:block;font-size:.7rem;color:var(--text-secondary);margin-bottom:5px;text-transform:uppercase}
+        .form-input{width:100%;background:var(--bg-primary);border:2px solid var(--border-color);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:.85rem;color:var(--text-primary)}
+        .form-input:focus{outline:none;border-color:var(--accent-neon-green)}
+        .tip-options{display:flex;gap:8px;margin-bottom:12px}
+        .tip-btn{flex:1;padding:10px;background:var(--bg-primary);border:2px solid var(--border-color);border-radius:6px;color:var(--text-secondary);cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;transition:all .2s ease}
+        .tip-btn:hover{border-color:var(--accent-neon-green)}
+        .tip-btn.active{background:var(--accent-neon-green);border-color:var(--accent-neon-green);color:#000}
+        .fee-breakdown{background:var(--bg-primary);border-radius:8px;padding:12px;margin-bottom:12px}
+        .fee-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.8rem}
+        .fee-row.total{border-top:1px solid var(--border-color);margin-top:8px;padding-top:10px;font-weight:700}
+        .fee-row .label{color:var(--text-secondary)}
+        .fee-row .value{color:var(--text-primary);font-family:monospace}
+        .fee-row.receives .value{color:var(--accent-neon-green)}
+        .fee-row.deduction .value{color:var(--accent-red)}
+        .fee-row.total .value{color:var(--accent-cyan)}
+        .form-actions{display:flex;gap:8px;margin-top:14px}
+        .toast-container{position:fixed;bottom:20px;right:20px;z-index:2000}
+        .toast{background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;padding:12px 16px;margin-top:8px;display:flex;align-items:center;gap:8px;animation:slideIn .3s ease;font-size:.85rem}
+        @keyframes slideIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+        .toast.success{border-left:3px solid var(--accent-neon-green)}
+        .toast.error{border-left:3px solid var(--accent-red)}
+        .toast.info{border-left:3px solid var(--accent-cyan)}
+        .health-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border-radius:8px;margin-bottom:20px;font-size:.75rem;flex-wrap:wrap}
+        .health-dot{width:8px;height:8px;border-radius:50%;background:var(--accent-neon-green);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .health-dot.error{background:var(--accent-red);animation:none}
+        
+        /* Wallet Selection Modal */
+        .wallet-options{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+        .wallet-option{display:flex;align-items:center;gap:16px;padding:20px;background:var(--bg-card);border:2px solid var(--border-color);border-radius:12px;cursor:pointer;transition:all .2s ease}
+        .wallet-option:hover{border-color:var(--accent-neon-green);transform:translateX(4px)}
+        .wallet-option.yours:hover{border-color:var(--accent-neon-green)}
+        .wallet-option.handcash:hover{border-color:var(--handcash-green)}
+        .wallet-icon{font-size:2rem}
+        .wallet-option-info h3{font-size:1rem;margin-bottom:4px}
+        .wallet-option-info p{font-size:.75rem;color:var(--text-secondary)}
+        .wallet-option.yours .wallet-option-info h3{color:var(--accent-neon-green)}
+        .wallet-option.handcash .wallet-option-info h3{color:var(--handcash-green)}
+        
+        @media(max-width:768px){header{flex-direction:column;text-align:center}.search-box{flex-direction:column}.detail-grid{grid-template-columns:1fr}.tip-options{flex-direction:column}}
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="container">
+        <header>
+            <div><h1 class="logo">4chain Ordinals</h1><p class="tagline">1Sat Marketplace</p></div>
+            <div class="wallet-section">
+                <div class="wallet-info" id="walletInfo">
+                    <div class="wallet-type" id="walletType">--</div>
+                    <div class="wallet-address" id="walletAddress">--</div>
+                    <div class="wallet-balance" id="walletBalance">-- BSV</div>
+                </div>
+                <button class="btn btn-neon" id="connectWalletBtn" onclick="showWalletModal()">Connect Wallet</button>
+            </div>
+        </header>
+        <div class="health-bar">
+            <div style="display:flex;align-items:center;gap:6px;"><div class="health-dot" id="healthDot"></div><span id="healthStatus">Connecting...</span></div>
+            <span style="color:var(--text-dim);">|</span><span id="listingsCount">Listings: --</span>
+            <span style="color:var(--text-dim);">|</span><span id="walletStatusText">Wallet: Not Connected</span>
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('explore',this)">🔍 Explore</button>
+            <button class="tab" onclick="switchTab('my-ordinals',this)">◆ My Ordinals</button>
+            <button class="tab" onclick="switchTab('marketplace',this)">🏪 Marketplace</button>
+        </div>
+        <div class="tab-content active" id="explore-tab">
+            <div class="search-section">
+                <div class="search-label">Search Wallet Address</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="addressInput" placeholder="Enter BSV address..." value="1skbG9UYUm9x9dMkUVtomSL9LLRgFi4f3">
+                    <button class="btn btn-primary" id="searchBtn" onclick="searchWallet()">Search</button>
+                </div>
+            </div>
+            <div class="stats-bar" id="statsBar" style="display:none;">
+                <div class="stat-card"><div class="stat-value" id="totalOrdinals">0</div><div class="stat-label">Ordinals</div></div>
+                <div class="stat-card"><div class="stat-value" id="imageCount">0</div><div class="stat-label">Images</div></div>
+                <div class="stat-card"><div class="stat-value" id="fetchTime">0ms</div><div class="stat-label">Fetch Time</div></div>
+            </div>
+            <div id="exploreResults"><div class="empty-state"><div class="empty-icon">⬡</div><h3 class="empty-title">Enter a Wallet Address</h3><p>Search any BSV wallet to discover ordinals</p></div></div>
+        </div>
+        <div class="tab-content" id="my-ordinals-tab">
+            <div id="myOrdinalsContent"><div class="empty-state"><div class="empty-icon">🔗</div><h3 class="empty-title">Connect Your Wallet</h3><p>Connect Yours Wallet or HandCash to view your ordinals</p><button class="btn btn-neon" style="margin-top:15px;" onclick="showWalletModal()">Connect Wallet</button></div></div>
+        </div>
+        <div class="tab-content" id="marketplace-tab">
+            <div class="search-section"><div class="search-label">Active Listings</div><p style="color:var(--text-secondary);font-size:.85rem;">Browse ordinals for sale. Connect wallet to buy.</p></div>
+            <div id="marketplaceListings"><div class="loading"><div class="spinner"></div><div>Loading...</div></div></div>
+        </div>
+    </div>
+
+    <!-- Main Modal (for ordinal details) -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header"><h3 class="modal-title" id="modalTitle">Ordinal Details</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+            <div class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Wallet Selection Modal -->
+    <div class="modal-overlay" id="walletModalOverlay" onclick="closeWalletModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header"><h3 class="modal-title">Connect Wallet</h3><button class="modal-close" onclick="closeWalletModal()">&times;</button></div>
+            <div class="modal-content">
+                <p style="color:var(--text-secondary);margin-bottom:8px;">Choose your wallet to connect:</p>
+                <div class="wallet-options">
+                    <div class="wallet-option yours" onclick="connectYoursWallet()">
+                        <div class="wallet-icon">👛</div>
+                        <div class="wallet-option-info">
+                            <h3>Yours Wallet</h3>
+                            <p>Browser extension wallet for BSV & Ordinals</p>
+                        </div>
+                    </div>
+                    <div class="wallet-option handcash" onclick="connectHandCash()">
+                        <div class="wallet-icon">💚</div>
+                        <div class="wallet-option-info">
+                            <h3>HandCash</h3>
+                            <p>Connect with your HandCash account</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="color:var(--text-dim);font-size:.7rem;margin-top:16px;text-align:center;">By connecting, you agree to our terms of service</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+<script>
+(function(){
+'use strict';
+
+// =============================================================================
+// CONFIGURATION
+// =============================================================================
+const CONFIG = {
+    API_BASE: 'https://marketplace-ttw2.onrender.com',
+    GORILLA_CONTENT: 'https://ordinals.gorillapool.io/content',
+    HANDCASH_APP_ID: '68082b6ba117aae3817ec15f',
+    HANDCASH_REDIRECT_URL: window.location.origin + window.location.pathname,
+    HEALTH_CHECK_INTERVAL: 30000
+};
+
+// =============================================================================
+// STATE
+// =============================================================================
+const state = {
+    currentOrdinals: [],
+    myOrdinals: [],
+    marketplaceListings: [],
+    walletConnected: false,
+    walletType: null,
+    walletAddress: null,
+    walletOrdAddress: null,
+    walletPaymail: null,
+    handcashAuthToken: null,
+    selectedTipPercent: 0
+};
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+function truncateAddress(a){return(!a||a.length<15)?(a||'--'):`${a.slice(0,6)}...${a.slice(-6)}`}
+function truncateOrigin(o){return(!o||o.length<20)?o:`${o.slice(0,10)}...${o.slice(-6)}`}
+function formatSize(b){if(!b)return'N/A';if(b<1024)return`${b} B`;if(b<1048576)return`${(b/1024).toFixed(1)} KB`;return`${(b/1048576).toFixed(2)} MB`}
+function satsToBsv(s){return(!s||s<0)?'0':(s/100000000).toFixed(8).replace(/\.?0+$/,'')||'0'}
+function bsvToSats(b){return Math.round(parseFloat(b)*100000000)}
+function extractName(o){return o.metadata?.name||o.metadata?.subTypeData?.name||null}
+function escapeHtml(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+function getContentUrl(o){
+    if(o.origin) return `${CONFIG.GORILLA_CONTENT}/${o.origin}`;
+    if(o.txid) return `${CONFIG.GORILLA_CONTENT}/${o.txid}_${o.vout}`;
+    return null;
+}
+
+function getImageUrl(o){
+    if(o.content_type === 'application/bsv-20' || 
+       o.content_type === 'application/bsv-21' ||
+       o.content_type === 'text/plain') {
+        return null;
+    }
+    if(o.origin) return `${CONFIG.GORILLA_CONTENT}/${o.origin}`;
+    return null;
+}
+
+function showToast(m,t='info'){
+    const c=document.getElementById('toastContainer');
+    const toast=document.createElement('div');
+    toast.className=`toast ${t}`;
+    toast.innerHTML=`<span>${t==='success'?'✓':t==='error'?'✗':'ℹ'}</span><span>${escapeHtml(m)}</span>`;
+    c.appendChild(toast);
+    setTimeout(()=>{toast.style.opacity='0';setTimeout(()=>toast.remove(),300)},3500);
+}
+
+function closeModal(e){if(!e||e.target.id==='modalOverlay')document.getElementById('modalOverlay').classList.remove('active')}
+function closeWalletModal(e){if(!e||e.target.id==='walletModalOverlay')document.getElementById('walletModalOverlay').classList.remove('active')}
+function showWalletModal(){document.getElementById('walletModalOverlay').classList.add('active')}
+
+function switchTab(n,b){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    if(b)b.classList.add('active');
+    document.getElementById(`${n}-tab`).classList.add('active');
+    if(n==='marketplace')loadMarketplaceListings();
+}
+
+function calculateFees(p,t=0){
+    const f=Math.ceil(p*(1/100));
+    const tip=Math.ceil(p*(t/100));
+    return{listingPrice:p,marketplaceFee:f,tip:tip,sellerReceives:Math.max(0,p-f-tip)};
+}
+
+function selectTip(p,b){
+    state.selectedTipPercent=p;
+    document.querySelectorAll('.tip-btn').forEach(x=>x.classList.remove('active'));
+    if(b)b.classList.add('active');
+    updateFeeBreakdown();
+}
+
+function updateFeeBreakdown(){
+    const i=document.getElementById('listingPrice');
+    if(!i)return;
+    const fees=calculateFees(bsvToSats(parseFloat(i.value)||0),state.selectedTipPercent);
+    const el=id=>document.getElementById(id);
+    if(el('listingPriceDisplay'))el('listingPriceDisplay').textContent=satsToBsv(fees.listingPrice)+' BSV';
+    if(el('marketplaceFee'))el('marketplaceFee').textContent='-'+satsToBsv(fees.marketplaceFee)+' BSV';
+    if(el('tipAmount'))el('tipAmount').textContent='-'+satsToBsv(fees.tip)+' BSV';
+    if(el('youReceive'))el('youReceive').textContent=satsToBsv(fees.sellerReceives)+' BSV';
+}
+
+function copyToClipboard(t){navigator.clipboard.writeText(t).then(()=>showToast('Copied!','success'))}
+
+// =============================================================================
+// YOURS WALLET INTEGRATION
+// =============================================================================
+async function connectYoursWallet(){
+    closeWalletModal();
+    
+    if(!window.yours){
+        showToast('Yours Wallet not detected. Please install it first.','error');
+        window.open('https://yours.org','_blank');
+        return;
+    }
+    
+    const btn=document.getElementById('connectWalletBtn');
+    try{
+        btn.disabled=true;
+        btn.textContent='Connecting...';
+        
+        const connected = await window.yours.connect();
+        if(connected){
+            state.walletType = 'yours';
+            const addr = await window.yours.getAddresses();
+            state.walletAddress = addr.bsvAddress;
+            state.walletOrdAddress = addr.ordAddress;
+            
+            let bal = 0;
+            try{
+                const b = await window.yours.getBalance();
+                bal = (b?.bsv?.satoshis || b?.satoshis || (typeof b === 'number' ? b : 0)) / 100000000;
+            }catch(e){}
+            
+            updateWalletUI(bal);
+            showToast('Yours Wallet connected!','success');
+            loadMyOrdinals();
+        } else {
+            throw new Error('Connection rejected');
+        }
+    }catch(e){
+        showToast('Failed: '+e.message,'error');
+        btn.textContent='Connect Wallet';
+    }finally{
+        btn.disabled=false;
+    }
+}
+
+// =============================================================================
+// HANDCASH INTEGRATION
+// =============================================================================
+function connectHandCash(){
+    closeWalletModal();
+    
+    const storedToken = localStorage.getItem('handcash_auth_token');
+    if(storedToken){
+        validateHandCashToken(storedToken);
+        return;
+    }
+    
+    const permissions = encodeURIComponent('user_public_profile,user_private_profile,pay,data_read,data_write');
+    const redirectUrl = encodeURIComponent(CONFIG.HANDCASH_REDIRECT_URL);
+    const authUrl = `https://app.handcash.io/#/authorizeApp?appId=${CONFIG.HANDCASH_APP_ID}&redirectUrl=${redirectUrl}`;
+    
+    showToast('Redirecting to HandCash...','info');
+    window.location.href = authUrl;
+}
+
+async function validateHandCashToken(token){
+    try{
+        showToast('Validating HandCash session...','info');
+        
+        const response = await fetch(`${CONFIG.API_BASE}/handcash/profile`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ authToken: token })
+        });
+        
+        if(!response.ok) throw new Error('Invalid token');
+        
+        const data = await response.json();
+        if(data.success){
+            state.walletType = 'handcash';
+            state.handcashAuthToken = token;
+            state.walletPaymail = data.profile.paymail;
+            state.walletOrdAddress = data.profile.ordAddress || data.profile.paymail;
+            state.walletAddress = data.profile.paymail;
+            
+            localStorage.setItem('handcash_auth_token', token);
+            
+            updateWalletUI(data.profile.balance || 0);
+            showToast(`Connected as ${data.profile.handle}!`,'success');
+            loadMyOrdinals();
+        } else {
+            throw new Error(data.message || 'Validation failed');
+        }
+    }catch(e){
+        console.error('HandCash validation error:', e);
+        localStorage.removeItem('handcash_auth_token');
+        showToast('HandCash session expired. Please reconnect.','error');
+    }
+}
+
+function handleHandCashCallback(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = urlParams.get('authToken');
+    
+    if(authToken){
+        window.history.replaceState({}, document.title, window.location.pathname);
+        validateHandCashToken(authToken);
+    }
+}
+
+// =============================================================================
+// WALLET UI UPDATE
+// =============================================================================
+function updateWalletUI(balance){
+    state.walletConnected = true;
+    
+    document.getElementById('walletInfo').classList.add('connected');
+    document.getElementById('walletType').textContent = state.walletType === 'yours' ? '👛 Yours' : '💚 HandCash';
+    document.getElementById('walletAddress').textContent = truncateAddress(state.walletOrdAddress);
+    document.getElementById('walletAddress').onclick = () => copyToClipboard(state.walletOrdAddress);
+    document.getElementById('walletBalance').textContent = (balance || 0).toFixed(4) + ' BSV';
+    
+    const btn = document.getElementById('connectWalletBtn');
+    btn.textContent = 'Connected ✓';
+    btn.className = 'btn btn-secondary';
+    btn.onclick = disconnectWallet;
+    
+    document.getElementById('walletStatusText').textContent = 
+        state.walletType === 'yours' ? 'Yours: ' + truncateAddress(state.walletOrdAddress) :
+        'HandCash: ' + state.walletPaymail;
+}
+
+function disconnectWallet(){
+    state.walletConnected = false;
+    state.walletType = null;
+    state.walletAddress = null;
+    state.walletOrdAddress = null;
+    state.walletPaymail = null;
+    state.handcashAuthToken = null;
+    state.myOrdinals = [];
+    
+    localStorage.removeItem('handcash_auth_token');
+    
+    document.getElementById('walletInfo').classList.remove('connected');
+    const btn = document.getElementById('connectWalletBtn');
+    btn.textContent = 'Connect Wallet';
+    btn.className = 'btn btn-neon';
+    btn.onclick = showWalletModal;
+    
+    document.getElementById('walletStatusText').textContent = 'Wallet: Not Connected';
+    document.getElementById('myOrdinalsContent').innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div><h3 class="empty-title">Connect Your Wallet</h3><p>Connect Yours Wallet or HandCash to view your ordinals</p><button class="btn btn-neon" style="margin-top:15px;" onclick="showWalletModal()">Connect Wallet</button></div>';
+    
+    showToast('Wallet disconnected','info');
+}
+
+// =============================================================================
+// ORDINALS LOADING
+// =============================================================================
+async function loadMyOrdinals(){
+    if(!state.walletOrdAddress) return;
+    
+    const c = document.getElementById('myOrdinalsContent');
+    c.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading your ordinals...</div></div>';
+    
+    try{
+        const r = await fetch(`${CONFIG.API_BASE}/wallet/${state.walletOrdAddress}`);
+        const d = await r.json();
+        if(d.success){
+            state.myOrdinals = d.data.ordinals;
+            renderMyOrdinals();
+        } else {
+            throw new Error(d.message);
+        }
+    }catch(e){
+        c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3 class="empty-title">Error</h3><p>${e.message}</p></div>`;
+    }
+}
+
+function renderMyOrdinals(){
+    const c = document.getElementById('myOrdinalsContent');
+    if(!state.myOrdinals.length){
+        c.innerHTML = '<div class="empty-state"><div class="empty-icon">◇</div><h3 class="empty-title">No Ordinals Found</h3><p>Your ordinals will appear here</p></div>';
+        return;
+    }
+    
+    let h = `<div class="stats-bar"><div class="stat-card"><div class="stat-value">${state.myOrdinals.length}</div><div class="stat-label">My Ordinals</div></div></div><div class="ordinals-grid">`;
+    state.myOrdinals.forEach(o => {
+        h += createOrdinalCard(o, true, state.marketplaceListings.some(l => l.origin === o.origin));
+    });
+    c.innerHTML = h + '</div>';
+}
+
+async function searchWallet(){
+    const addr = document.getElementById('addressInput').value.trim();
+    if(!addr){showToast('Enter address','error');return}
+    
+    const c = document.getElementById('exploreResults');
+    document.getElementById('statsBar').style.display = 'none';
+    document.getElementById('searchBtn').disabled = true;
+    c.innerHTML = '<div class="loading"><div class="spinner"></div><div>Fetching ordinals...</div></div>';
+    
+    try{
+        const r = await fetch(`${CONFIG.API_BASE}/wallet/${encodeURIComponent(addr)}`);
+        const d = await r.json();
+        if(d.success){
+            state.currentOrdinals = d.data.ordinals;
+            displayResults(d.data);
+        } else {
+            throw new Error(d.message);
+        }
+    }catch(e){
+        c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3 class="empty-title">Error</h3><p>${e.message}</p></div>`;
+    }finally{
+        document.getElementById('searchBtn').disabled = false;
+    }
+}
+
+function displayResults(data){
+    const c = document.getElementById('exploreResults');
+    if(!data.ordinals?.length){
+        c.innerHTML = '<div class="empty-state"><div class="empty-icon">◇</div><h3 class="empty-title">No Ordinals Found</h3></div>';
+        return;
+    }
+    
+    document.getElementById('statsBar').style.display = 'grid';
+    document.getElementById('totalOrdinals').textContent = data.total_count;
+    document.getElementById('fetchTime').textContent = data.fetch_time_ms + 'ms';
+    document.getElementById('imageCount').textContent = data.ordinals.filter(o => o.content_type?.startsWith('image/')).length;
+    
+    let h = '<div class="ordinals-grid">';
+    data.ordinals.forEach(o => { h += createOrdinalCard(o, false, false); });
+    c.innerHTML = h + '</div>';
+}
+
+function createOrdinalCard(ord, isOwned, isListed){
+    const isImg = ord.content_type?.startsWith('image/');
+    const isToken = ord.content_type === 'application/bsv-20' || ord.content_type === 'application/bsv-21';
+    const type = isToken ? 'TOKEN' : (ord.content_type?.split('/')[1]?.toUpperCase() || 'FILE');
+    const name = extractName(ord) || `#${ord.inscription_number || '?'}`;
+    const url = getImageUrl(ord);
+    const listing = state.marketplaceListings.find(l => l.origin === ord.origin);
+    const showImage = isImg && url;
+    const placeholderIcon = isToken ? '🪙' : '◇';
+    
+    return `<div class="ordinal-card ${isListed?'listed':''}" onclick="showOrdinalDetails('${ord.origin}',${isOwned})">
+        <div class="ordinal-preview">
+            ${showImage ? `<img src="${url}" loading="lazy" crossorigin="anonymous" onload="this.classList.add('loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="placeholder" style="display:none;">${placeholderIcon}</div>` : `<div class="placeholder">${placeholderIcon}</div>`}
+            <span class="badge badge-type">${type}</span>
+            ${isListed ? '<span class="badge badge-listed">For Sale</span>' : ''}
+        </div>
+        <div class="ordinal-info">
+            <div class="ordinal-name">${escapeHtml(name)}</div>
+            <div class="ordinal-origin">${truncateOrigin(ord.origin)}</div>
+            ${listing ? `<div class="ordinal-price"><div class="price-value">${satsToBsv(listing.fees.total_price)} BSV</div><div class="price-label">Price</div></div>` : ''}
+        </div>
+    </div>`;
+}
+
+// =============================================================================
+// ORDINAL DETAILS MODAL
+// =============================================================================
+function showOrdinalDetails(origin, isOwned){
+    const ord = [...state.currentOrdinals, ...state.myOrdinals].find(o => o.origin === origin);
+    if(!ord) return;
+    
+    const listing = state.marketplaceListings.find(l => l.origin === origin);
+    const isListed = !!listing;
+    const url = getContentUrl(ord);
+    const name = extractName(ord) || `#${ord.inscription_number || '?'}`;
+    const isImg = ord.content_type?.startsWith('image/');
+    
+    document.getElementById('modalTitle').textContent = name;
+    state.selectedTipPercent = 0;
+    
+    let actions = '';
+    
+    if(isOwned && state.walletConnected && !isListed){
+        actions = `<div class="listing-form"><div class="form-title">📝 Create Listing</div>
+            <div class="form-group"><label class="form-label">Listing Price (BSV)</label>
+            <input type="number" class="form-input" id="listingPrice" placeholder="0.05" step="0.0001" min="0.0001" oninput="updateFeeBreakdown()"></div>
+            <div class="form-group"><label class="form-label">Support 4chain (Optional Tip)</label>
+            <div class="tip-options">
+                <button class="tip-btn active" onclick="selectTip(0,this)">No Tip</button>
+                <button class="tip-btn" onclick="selectTip(2.5,this)">2.5%</button>
+                <button class="tip-btn" onclick="selectTip(5,this)">5%</button>
+            </div></div>
+            <div class="fee-breakdown">
+                <div class="fee-row"><span class="label">Listing Price</span><span class="value" id="listingPriceDisplay">0 BSV</span></div>
+                <div class="fee-row deduction"><span class="label">- Platform Fee (1%)</span><span class="value" id="marketplaceFee">0 BSV</span></div>
+                <div class="fee-row deduction"><span class="label">- Tip</span><span class="value" id="tipAmount">0 BSV</span></div>
+                <div class="fee-row total receives"><span class="label">You Receive</span><span class="value" id="youReceive">0 BSV</span></div>
+            </div>
+            <p style="font-size:.7rem;color:var(--text-dim);margin-bottom:12px;">Buyer pays listing price. Fees deducted from proceeds.</p>
+            <div class="form-actions"><button class="btn btn-neon" onclick="createListing('${origin}')" style="flex:1;">List for Sale</button></div>
+        </div>`;
+    } else if(isOwned && isListed){
+        actions = `<div class="listing-form"><div class="form-title">✓ Currently Listed</div>
+            <div class="fee-breakdown">
+                <div class="fee-row"><span class="label">Price</span><span class="value">${satsToBsv(listing.fees.total_price)} BSV</span></div>
+                <div class="fee-row receives"><span class="label">You Receive</span><span class="value">${satsToBsv(listing.fees.seller_receives)} BSV</span></div>
+            </div>
+            <button class="btn btn-secondary" onclick="cancelListing('${listing.id}')" style="width:100%;">Cancel Listing</button>
+        </div>`;
+    } else if(isListed && state.walletConnected){
+        actions = `<div class="listing-form"><div class="form-title">💰 Purchase This Ordinal</div>
+            <div class="fee-breakdown">
+                <div class="fee-row total"><span class="label">Total Price</span><span class="value">${satsToBsv(listing.fees.total_price)} BSV</span></div>
+            </div>
+            <button class="btn btn-neon" onclick="purchaseOrdinal('${listing.id}')" style="width:100%;">Buy Now</button>
+        </div>`;
+    } else if(isListed){
+        actions = `<div class="listing-form"><div class="form-title">💰 For Sale</div>
+            <div class="fee-breakdown">
+                <div class="fee-row total"><span class="label">Price</span><span class="value">${satsToBsv(listing.fees.total_price)} BSV</span></div>
+            </div>
+            <button class="btn btn-neon" onclick="showWalletModal()" style="width:100%;">Connect Wallet to Buy</button>
+        </div>`;
+    }
+    
+    document.getElementById('modalContent').innerHTML = `
+        <div class="modal-preview">${isImg && url ? `<img src="${url}" crossorigin="anonymous" onerror="this.outerHTML='<div class=\\'placeholder\\'>◇</div>'">` : '<div class="placeholder">◇</div>'}</div>
+        <div class="detail-grid">
+            <div class="detail-item full-width"><div class="detail-label">Origin</div><div class="detail-value" style="font-size:.7rem;">${origin}</div></div>
+            <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value highlight">${ord.content_type || 'Unknown'}</div></div>
+            <div class="detail-item"><div class="detail-label">Size</div><div class="detail-value">${formatSize(ord.content_size)}</div></div>
+            <div class="detail-item"><div class="detail-label">Block</div><div class="detail-value">${ord.block_height || 'N/A'}</div></div>
+            <div class="detail-item"><div class="detail-label">Owner</div><div class="detail-value">${truncateAddress(ord.owner_address)}</div></div>
+            <div class="detail-item full-width">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    ${url ? `<a href="${url}" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;">View Full</a>` : ''}
+                    <button class="btn btn-secondary btn-small" onclick="copyToClipboard('${origin}')">Copy Origin</button>
+                </div>
+            </div>
+        </div>
+        ${actions}`;
+    
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+// =============================================================================
+// MARKETPLACE LISTINGS
+// =============================================================================
+async function loadMarketplaceListings(){
+    const c = document.getElementById('marketplaceListings');
+    try{
+        const r = await fetch(`${CONFIG.API_BASE}/listings`);
+        const d = await r.json();
+        if(d.success){
+            state.marketplaceListings = d.listings;
+            renderMarketplace();
+        } else {
+            throw new Error(d.message);
+        }
+    }catch(e){
+        c.innerHTML = `<div class="empty-state"><div class="empty-icon">🏪</div><h3 class="empty-title">Marketplace Unavailable</h3><p>${e.message}</p><button class="btn btn-secondary" style="margin-top:12px;" onclick="loadMarketplaceListings()">Retry</button></div>`;
+    }
+}
+
+function renderMarketplace(){
+    const c = document.getElementById('marketplaceListings');
+    if(!state.marketplaceListings.length){
+        c.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div><h3 class="empty-title">No Active Listings</h3><p>Be the first to list an ordinal!</p></div>';
+        return;
+    }
+    
+    let h = '<div class="ordinals-grid">';
+    state.marketplaceListings.forEach(l => {
+        const url = `${CONFIG.GORILLA_CONTENT}/${l.origin}`;
+        h += `<div class="ordinal-card listed" onclick="showOrdinalDetails('${l.origin}', false)">
+            <div class="ordinal-preview">
+                <img src="${url}" loading="lazy" crossorigin="anonymous" onload="this.classList.add('loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="placeholder" style="display:none;">◇</div>
+                <span class="badge badge-listed">For Sale</span>
+            </div>
+            <div class="ordinal-info">
+                <div class="ordinal-name">Listing</div>
+                <div class="ordinal-origin">${truncateOrigin(l.origin)}</div>
+                <div class="ordinal-price">
+                    <div class="price-value">${satsToBsv(l.fees.total_price)} BSV</div>
+                    <div class="price-label">Price</div>
+                </div>
+            </div>
+        </div>`;
+    });
+    c.innerHTML = h + '</div>';
+}
+
+// =============================================================================
+// LISTING ACTIONS
+// =============================================================================
+async function createListing(origin){
+    const price = parseFloat(document.getElementById('listingPrice')?.value);
+    if(!price || price <= 0){
+        showToast('Enter a valid price','error');
+        return;
+    }
+    
+    const ord = state.myOrdinals.find(o => o.origin === origin);
+    if(!ord){
+        showToast('Ordinal not found','error');
+        return;
+    }
+    
+    const fees = calculateFees(bsvToSats(price), state.selectedTipPercent);
+    if(fees.sellerReceives <= 0){
+        showToast('Price too low after fees','error');
+        return;
+    }
+    
+    try{
+        showToast('Creating listing...','info');
+        
+        const payload = {
+            origin,
+            ordinal_utxo: {
+                txid: ord.txid,
+                vout: ord.vout,
+                satoshis: ord.satoshis || 1,
+                script: ''
+            },
+            seller_wants_satoshis: fees.sellerReceives,
+            tip_percent: state.selectedTipPercent,
+            seller_address: state.walletAddress,
+            seller_ord_address: state.walletOrdAddress,
+            listing_price_satoshis: fees.listingPrice,
+            marketplace_fee_satoshis: fees.marketplaceFee,
+            tip_satoshis: fees.tip,
+            marketplace_fee_address: CONFIG.MARKETPLACE_FEE_ADDRESS,
+            wallet_type: state.walletType
+        };
+        
+        const r = await fetch(`${CONFIG.API_BASE}/listings`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        const d = await r.json();
+        if(d.success){
+            state.marketplaceListings.push(d.listing);
+            showToast('Listed successfully!','success');
+            closeModal();
+            renderMyOrdinals();
+            renderMarketplace();
+        } else {
+            throw new Error(d.message);
+        }
+    }catch(e){
+        showToast('Error: ' + e.message,'error');
+    }
+}
+
+async function cancelListing(id){
+    try{
+        showToast('Cancelling listing...','info');
+        
+        const r = await fetch(`${CONFIG.API_BASE}/listings/${id}/cancel`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                listing_id: id,
+                seller_ord_address: state.walletOrdAddress
+            })
+        });
+        
+        const d = await r.json();
+        if(d.success){
+            state.marketplaceListings = state.marketplaceListings.filter(l => l.id !== id);
+            showToast('Listing cancelled','info');
+            closeModal();
+            renderMyOrdinals();
+            renderMarketplace();
+        } else {
+            throw new Error(d.message);
+        }
+    }catch(e){
+        showToast('Error: ' + e.message,'error');
+    }
+}
+
+// =============================================================================
+// PURCHASE FLOW
+// =============================================================================
+async function purchaseOrdinal(listingId){
+    const listing = state.marketplaceListings.find(x => x.id === listingId);
+    if(!listing){
+        showToast('Listing not found','error');
+        return;
+    }
+    
+    if(!state.walletConnected){
+        showToast('Please connect your wallet first','error');
+        showWalletModal();
+        return;
+    }
+    
+    if(listing.seller_ord_address === state.walletOrdAddress){
+        showToast('Cannot buy your own listing','error');
+        return;
+    }
+    
+    const totalSats = listing.fees.total_price;
+    
+    try{
+        showToast('Initiating purchase...','info');
+        
+        if(state.walletType === 'yours'){
+            await purchaseWithYours(listing, totalSats);
+        } else if(state.walletType === 'handcash'){
+            await purchaseWithHandCash(listing, totalSats);
+        }
+    }catch(e){
+        console.error('Purchase error:', e);
+        showToast('Purchase failed: ' + e.message,'error');
+    }
+}
+
+async function purchaseWithYours(listing, totalSats){
+    showToast('Preparing transaction...','info');
+    
+    const response = await fetch(`${CONFIG.API_BASE}/listings/${listing.id}/prepare-purchase`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            buyer_ord_address: state.walletOrdAddress,
+            buyer_payment_address: state.walletAddress
+        })
+    });
+    
+    const data = await response.json();
+    
+    if(!data.raw_tx_hex || !data.sig_requests){
+        throw new Error(data.message || 'Failed to prepare purchase');
+    }
+
+    showToast('Please sign the transaction in Yours Wallet...','info');
+    
+    const signatures = await window.yours.getSignatures({
+        rawtx: data.raw_tx_hex,
+        sigRequests: data.sig_requests
+    });
+    
+    if(!signatures || signatures.length === 0){
+        throw new Error('Signing cancelled or failed');
+    }
+    
+    const broadcastResponse = await fetch(`${CONFIG.API_BASE}/listings/${listing.id}/broadcast-purchase`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            raw_tx_hex: data.raw_tx_hex,
+            signatures: signatures
+        })
+    });
+    
+    const broadcastData = await broadcastResponse.json();
+    if(broadcastData.success){
+        showToast(`Purchase successful! TX: ${broadcastData.txid.slice(0,8)}...`,'success');
+        state.marketplaceListings = state.marketplaceListings.filter(l => l.id !== listing.id);
+        closeModal();
+        renderMarketplace();
+        setTimeout(() => loadMyOrdinals(), 2000);
+    } else {
+        throw new Error(broadcastData.message || 'Broadcast failed');
+    }
+}
+
+async function purchaseWithHandCash(listing, totalSats){
+    showToast('Processing HandCash payment...','info');
+    
+    const response = await fetch(`${CONFIG.API_BASE}/listings/${listing.id}/purchase-handcash`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            auth_token: state.handcashAuthToken,
+        })
+    });
+    
+    const data = await response.json();
+    
+    if(data.success){
+        showToast(`Purchase successful! TX: ${data.txid.slice(0,8)}...`,'success');
+        state.marketplaceListings = state.marketplaceListings.filter(l => l.id !== listing.id);
+        closeModal();
+        renderMarketplace();
+        setTimeout(() => loadMyOrdinals(), 2000);
+    } else {
+        throw new Error(data.message || 'HandCash payment failed');
+    }
+}
+
+// =============================================================================
+// HEALTH CHECK
+// =============================================================================
+async function checkHealth(){
+    try{
+        const r = await fetch(`${CONFIG.API_BASE}/health`);
+        const d = await r.json();
+        document.getElementById('healthDot').classList.remove('error');
+        document.getElementById('healthStatus').textContent = 'API Online';
+        document.getElementById('listingsCount').textContent = 'Listings: ' + (d.listings_count || 0);
+    }catch(e){
+        document.getElementById('healthDot').classList.add('error');
+        document.getElementById('healthStatus').textContent = 'API Offline';
+    }
+}
+
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+function init(){
+    console.log('🚀 4chain Ordinals Marketplace v2');
+    console.log('📡 API:', CONFIG.API_BASE);
+    
+    handleHandCashCallback();
+    
+    const storedToken = localStorage.getItem('handcash_auth_token');
+    if(storedToken){
+        validateHandCashToken(storedToken);
+    }
+    
+    setTimeout(() => {
+        if(window.yours?.isConnected && !state.walletConnected){
+            window.yours.isConnected().then(connected => {
+                if(connected) connectYoursWallet();
+            });
+        }
+    }, 500);
+    
+    checkHealth();
+    setInterval(checkHealth, CONFIG.HEALTH_CHECK_INTERVAL);
+    
+    loadMarketplaceListings();
+    
+    document.getElementById('addressInput').addEventListener('keypress', e => {
+        if(e.key === 'Enter') searchWallet();
+    });
+    document.addEventListener('keydown', e => {
+        if(e.key === 'Escape'){
+            closeModal();
+            closeWalletModal();
+        }
+    });
+}
+
+// Expose functions
+window.showWalletModal = showWalletModal;
+window.closeWalletModal = closeWalletModal;
+window.connectYoursWallet = connectYoursWallet;
+window.connectHandCash = connectHandCash;
+window.disconnectWallet = disconnectWallet;
+window.switchTab = switchTab;
+window.closeModal = closeModal;
+window.searchWallet = searchWallet;
+window.loadMyOrdinals = loadMyOrdinals;
+window.showOrdinalDetails = showOrdinalDetails;
+window.loadMarketplaceListings = loadMarketplaceListings;
+window.createListing = createListing;
+window.cancelListing = cancelListing;
+window.purchaseOrdinal = purchaseOrdinal;
+window.selectTip = selectTip;
+window.updateFeeBreakdown = updateFeeBreakdown;
+window.copyToClipboard = copyToClipboard;
+
+if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+
+})();
+</script>
+</body>
+</html>
